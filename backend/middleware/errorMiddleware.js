@@ -1,20 +1,16 @@
-const logger = require("../config/logger")
+const logger = require("../config/logger");
 
-const errorHandler = (err,req,res,next)=>{
+const errorHandler = (err, req, res, next) => {
+  logger.error(err.message || err);
 
-logger.error(err.message || err)
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
 
-const statusCode = err.statusCode || 500
-const message = err.message || "Internal Server Error"
+  res.status(statusCode).json({
+    success: false,          // ✅ consistent response
+    message,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined  // ✅ stack trace better hai full error object se
+  });
+};
 
-res.status(statusCode).json({
-
-message,
-
-error: process.env.NODE_ENV === "development" ? err : undefined
-
-})
-
-}
-
-module.exports = errorHandler
+module.exports = errorHandler;

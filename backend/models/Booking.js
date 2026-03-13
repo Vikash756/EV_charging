@@ -1,30 +1,42 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
 
-userId:{
-type:mongoose.Schema.Types.ObjectId,
-ref:"User",
-required:true
-},
+  stationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Station",
+    required: true
+  },
 
-stationId:{
-type:mongoose.Schema.Types.ObjectId,
-ref:"Station",
-required:true
-},
+  // ✅ Kab charging shuru hogi
+  startTime: {
+    type: Date,
+    required: true
+  },
 
-bookingTime:{
-type:Date,
-default:Date.now
-},
+  // ✅ Kab khatam hogi
+  endTime: {
+    type: Date,
+    required: true
+  },
 
-status:{
-type:String,
-default:"Booked",
-enum:["Booked","Completed","Cancelled"]
-}
+  // ✅ Total amount
+  amount: {
+    type: Number,
+    required: true
+  },
 
-}, {timestamps: true})
+  status: {
+    type: String,
+    default: "Booked",
+    enum: ["Booked", "Completed", "Cancelled"]
+  }
 
-module.exports = mongoose.model("Booking",bookingSchema)
+}, { timestamps: true }); // ✅ createdAt, updatedAt automatically
+
+module.exports = mongoose.model("Booking", bookingSchema);

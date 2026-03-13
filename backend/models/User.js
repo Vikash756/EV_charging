@@ -1,23 +1,33 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
 
-name:{
-type:String,
-required:true
-},
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true  // ✅ "Test@Gmail.com" = "test@gmail.com"
+  },
 
-email:{
-type:String,
-required:true,
-unique:true
-},
+  password: {
+    type: String,
+    required: true,
+    minlength: 6  // ✅ minimum 6 characters
+  },
 
-password:{
-type:String,
-required:true
-}
+  // ✅ Role — controllers mein req.user.role use ho raha hai
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user"
+  }
 
-}, {timestamps: true})
+}, { timestamps: true });
 
-module.exports = mongoose.model("User",userSchema)
+module.exports = mongoose.model("User", userSchema);

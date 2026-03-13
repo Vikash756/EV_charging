@@ -18,6 +18,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.json({ message: "EV Charging API is running! ⚡" });
+});
+
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/stations", require("./routes/stationRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));

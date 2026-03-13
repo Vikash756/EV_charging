@@ -1,31 +1,33 @@
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 
-const authMiddleware = (req,res,next)=>{
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization;
 
-const token = req.headers.authorization
+  if (!token) {
+    return res.status(401).json({ success: false, message: "No token provided" });
+  }
 
-if(!token){
-return res.status(401).json({message:"No token provided"})
-}
+  try {
+    const parts = token.split(" ");
 
-try{
+    // ✅ "Bearer <token>" format check
+    if (parts.length !== 2 || parts[0] !== "Bearer") {
+      return res.status(401).json({ success: false, message: "Invalid token format. Use: Bearer <token>" });
+    }
 
-const parts = token.split(" ")
-if(parts.length !== 2){
-return res.status(401).json({message:"Invalid token format"})
-}
+    const decoded = jwt.verify(parts[1], process.env.JWT_SECRET);
+    req.user = decoded; // ✅ { id, role, email } hona chahiye
+    next();
 
-const decoded = jwt.verify(parts[1],process.env.JWT_SECRET)
+  } catch (err) {
 
-req.user = decoded
+    // ✅ Token expire hone pe alag message
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ success: false, message: "Token expired, please login again" });
+    }
 
-next()
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
+};
 
-}catch(err){
-
-return res.status(401).json({message:"Invalid token", error: err.message})
-}
-
-}
-
-module.exports = authMiddleware
+module.exports = authMiddleware;
