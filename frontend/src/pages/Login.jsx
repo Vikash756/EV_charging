@@ -9,16 +9,16 @@ export default function Login() {
 
   const handleLogin = async () => {
   try {
-    // const res = await API.post("/auth/login", { email, password });
+    const res = await API.post("/auth/login", { email, password });
     // localStorage.setItem("token", res.data.data.token);
     // localStorage.setItem("user", JSON.stringify(res.data.data.user));
     // navigate("/dashboard");
-    localStorage.setItem("token", "temp-token")
-  localStorage.setItem("user", JSON.stringify({
-    name: "Admin",
-    email: "admin@evcharging.com",
-    role: "admin"
-  }))
+  //   localStorage.setItem("token", "temp-token")
+  // localStorage.setItem("user", JSON.stringify({
+  //   name: "Admin",
+  //   email: "admin@evcharging.com",
+  //   role: "admin"
+  // }))
   navigate("/dashboard")
   } catch (err) {
     alert(err.response?.data?.message || "Login failed");
