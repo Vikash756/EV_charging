@@ -6,6 +6,7 @@ const navSections = [
     items: [
       { to: "/dashboard", icon: "⊞", label: "Overview" },
       { to: "/chargers", icon: "⚡", label: "Chargers" },
+      { to: "/bookings", icon: "📅", label: "Bookings" },
     ],
   },
   {
@@ -27,7 +28,6 @@ const navSections = [
     label: "RESOURCES",
     items: [
       { to: "/learning", icon: "📚", label: "Learning" },
-      { to: "/login", icon: "👤", label: "Login / Profile" },
     ],
   },
 ]
@@ -39,6 +39,10 @@ export default function Sidebar() {
     <aside style={{
       width: "220px",
       minHeight: "100vh",
+      position: "sticky",
+      top: 0,
+      height: "100vh",
+      overflowY: "auto",
       background: "#ffffff",
       borderRight: "1px solid #e8ecf0",
       display: "flex",
@@ -108,7 +112,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom user */}
+      {/* Bottom user
       <div style={{
         padding: "16px 20px",
         borderTop: "1px solid #f0f2f5",
@@ -124,7 +128,7 @@ export default function Sidebar() {
           <p style={{ fontSize: "12px", fontWeight: "600", color: "#0f172a", margin: 0 }}>Admin User</p>
           <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>admin@ev.com</p>
         </div>
-      </div>
+      </div> */}
     </aside>
   )
 }

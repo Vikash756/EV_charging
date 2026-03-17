@@ -7,20 +7,33 @@ export default function Login() {
   const [password, setPassword] = useState("")
   const navigate = useNavigate()
 
-  const handleLogin = async () => {
+//   const handleLogin = async () => {
+//   try {
+//     const res = await API.post("/auth/login", { email, password });
+//     localStorage.setItem("token", res.data.data.token);
+//     localStorage.setItem("user", JSON.stringify(res.data.data.user));
+//     navigate("/dashboard");
+//   //   localStorage.setItem("token", "temp-token")
+//   // localStorage.setItem("user", JSON.stringify({
+//   //   name: "Admin",
+//   //   email: "admin@evcharging.com",
+//   //   role: "admin"
+//   // }))
+//   // navigate("/dashboard")
+//   } catch (err) {
+//     alert(err.response?.data?.message || "Login failed");
+//   }
+// };
+
+const handleLogin = async () => {
   try {
     const res = await API.post("/auth/login", { email, password });
-    // localStorage.setItem("token", res.data.data.token);
-    // localStorage.setItem("user", JSON.stringify(res.data.data.user));
-    // navigate("/dashboard");
-  //   localStorage.setItem("token", "temp-token")
-  // localStorage.setItem("user", JSON.stringify({
-  //   name: "Admin",
-  //   email: "admin@evcharging.com",
-  //   role: "admin"
-  // }))
-  navigate("/dashboard")
+    console.log("Response:", res.data); // ✅ add karo
+    localStorage.setItem("token", res.data.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.data.user));
+    navigate("/dashboard");
   } catch (err) {
+    console.log("Error:", err); // ✅ add karo
     alert(err.response?.data?.message || "Login failed");
   }
 };
@@ -139,6 +152,10 @@ export default function Login() {
           <p style={{ textAlign: "center", fontSize: "12px", color: "#94a3b8", marginTop: "20px" }}>
             Forgot password? <span style={{ color: "#0284c7", cursor: "pointer", fontWeight: "600" }}>Reset here</span>
           </p>
+          <p style={{ textAlign: "center", fontSize: "12px", color: "#94a3b8", marginTop: "8px" }}>
+  Don't have an account?{" "}
+  <span onClick={() => navigate("/signup")} style={{ color: "#0284c7", cursor: "pointer", fontWeight: "600" }}>Sign up</span>
+</p>
         </div>
       </div>
     </div>

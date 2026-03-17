@@ -1,8 +1,14 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ add kiya
 
 export default function Navbar({ title = "Dashboard" }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate(); // ✅ add kiya
+
+  // ✅ Real user data
+  const user = JSON.parse(localStorage.getItem("user") || "{}")
+  const initials = user.name ? user.name.charAt(0).toUpperCase() : "U"
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -77,7 +83,7 @@ export default function Navbar({ title = "Dashboard" }) {
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: "13px", color: "#fff", fontWeight: "700", cursor: "pointer",
             }}
-          >V</div>
+          >{initials}</div> {/* ✅ Real initials */}
 
           {open && (
             <div style={{
@@ -87,19 +93,24 @@ export default function Navbar({ title = "Dashboard" }) {
               boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
               overflow: "hidden", zIndex: 100,
             }}>
-              {/* User Info */}
+              {/* ✅ Real user info */}
               <div style={{ padding: "12px 14px", borderBottom: "1px solid #e2e8f0" }}>
-                <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#0f172a" }}>Vikash Bairwa</p>
-                <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#94a3b8" }}>vikash@example.com</p>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#0f172a" }}>{user.name || "User"}</p>
+                <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#94a3b8" }}>{user.email || ""}</p>
               </div>
 
               {/* Menu Items */}
-              <MenuItem label="👤 Profile" onClick={() => { setOpen(false); }} />
-              <MenuItem label="⚙️ Settings" onClick={() => { setOpen(false); }} />
+              <MenuItem label="👤 Profile" onClick={() => { setOpen(false); navigate("/profile") }} />
+              <MenuItem label="⚙️ Settings" onClick={() => { setOpen(false); navigate("/settings") }} />
               <div style={{ height: "1px", background: "#e2e8f0", margin: "4px 0" }} />
               <MenuItem
                 label="🚪 Logout"
-                onClick={() => { setOpen(false); /* apna logout logic yahan */ }}
+                onClick={() => {
+                  setOpen(false);
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("user");
+                  window.location.href = "/login";
+                }}
                 color="#ef4444"
               />
             </div>
