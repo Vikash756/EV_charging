@@ -4,7 +4,7 @@ import Chargers from "./pages/Chargers"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import ComingSoon from "./pages/ComingSoon"
-import Bookings from "./pages/Bookings"
+import Bookings from "./pages/BookingS"
 import Profile from "./pages/Profile"
 import Settings from "./pages/Settings"
 
