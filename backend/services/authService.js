@@ -14,8 +14,8 @@ exports.signup = async (data) => {
   const user = new User({
     name: data.name,
     email: data.email,
-    password: hashedPassword
-    // ✅ role default "user" hoga — User model mein set hai
+    password: hashedPassword,
+    role: data.email === process.env.ADMIN_EMAIL ? "admin" : undefined
   });
 
   await user.save();
@@ -33,9 +33,10 @@ exports.login = async (data) => {
     throw new ApiError(400, "Invalid email or password");
   }
 
-  // ✅ role add kiya + expiry add ki
+  const effectiveRole = user.role === "admin" || user.email === process.env.ADMIN_EMAIL ? "admin" : user.role;
+
   const token = jwt.sign(
-    { id: user._id, role: user.role, email: user.email },
+    { id: user._id, role: effectiveRole, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -46,7 +47,7 @@ exports.login = async (data) => {
       id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role  // ✅ frontend ko role pata chalega
+      role: effectiveRole  // ✅ frontend ko role pata chalega
     }
   };
 };

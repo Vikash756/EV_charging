@@ -1,29 +1,54 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import ChargerCard from "../components/ChargerCard"
 import Layout from "../components/Layout"
 import API from "../api/axios"
 import useWindowSize from "../hooks/useWindowSize"
 
-const chargers = [
-  { id: "CHR-A1", name: "Charger A1", location: "Sector 5, Jaipur", type: "DC Fast", power: "50 kW", status: "Available", lastUsed: "2 hrs ago" },
-  { id: "CHR-B3", name: "Charger B3", location: "Mall Road, Delhi", type: "AC Level 2", power: "22 kW", status: "Charging", lastUsed: "Active now" },
-  { id: "CHR-C2", name: "Charger C2", location: "Koramangala, Bangalore", type: "DC Fast", power: "100 kW", status: "Available", lastUsed: "5 hrs ago" },
-  { id: "CHR-D1", name: "Charger D1", location: "Andheri, Mumbai", type: "AC Level 2", power: "22 kW", status: "Out of order", lastUsed: "3 days ago" },
-  { id: "CHR-E4", name: "Charger E4", location: "Sector 18, Noida", type: "DC Fast", power: "50 kW", status: "Offline", lastUsed: "1 day ago" },
-  { id: "CHR-F2", name: "Charger F2", location: "Banjara Hills, Hyderabad", type: "DC Fast", power: "150 kW", status: "Available", lastUsed: "30 min ago" },
-]
-
 const filters = ["All", "Available", "Charging", "Offline", "Out of order"]
 
 export default function Chargers() {
+  const [stations, setStations] = useState([])
+  const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState("All")
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: "", location: "", latitude: "", longitude: "", availableSlots: "", totalSlots: "", pricePerHour: "", chargerType: "Fast" })
   const { isMobile, isTablet } = useWindowSize()
+  const user = JSON.parse(localStorage.getItem("user") || "{}")
+  const isAdmin = user.role === "admin"
 
-  const filtered = activeFilter === "All" ? chargers : chargers.filter(c => c.status === activeFilter)
+  const fetchStations = async () => {
+    try {
+      setLoading(true)
+      const res = await API.get("/stations")
+      setStations(res.data.data || [])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchStations()
+  }, [])
+
+  const formattedStations = stations.map(s => ({
+    id: s._id,
+    name: s.name,
+    location: s.location,
+    type: s.chargerType === "Ultra-Fast" ? "DC Ultra-Fast" : s.chargerType === "Fast" ? "DC Fast" : "AC Level 2",
+    power: s.chargerType === "Ultra-Fast" ? "150 kW" : s.chargerType === "Fast" ? "50 kW" : "22 kW",
+    status: !s.isActive ? "Out of order" : s.availableSlots === 0 ? "Charging" : "Available",
+    lastUsed: s.isActive ? "Active now" : "Offline",
+  }))
+
+  const filtered = activeFilter === "All" ? formattedStations : formattedStations.filter(c => c.status === activeFilter)
 
   const handleAddStation = async () => {
+    if (!isAdmin) {
+      return alert("Only admin can add charging stations")
+    }
+
     try {
       await API.post("/stations", {
         ...form,
@@ -36,6 +61,7 @@ export default function Chargers() {
       alert("Station added successfully!")
       setShowForm(false)
       setForm({ name: "", location: "", latitude: "", longitude: "", availableSlots: "", totalSlots: "", pricePerHour: "", chargerType: "Fast" })
+      fetchStations()
     } catch (err) {
       alert(err.response?.data?.message || "Failed to add station")
     }
@@ -58,16 +84,18 @@ export default function Chargers() {
             }}>{f}</button>
           ))}
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{
-          padding: "9px 18px", borderRadius: "8px", border: "none",
-          background: "linear-gradient(135deg, #0284c7, #0ea5e9)",
-          color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer",
-          boxShadow: "0 4px 12px rgba(2,132,199,0.3)",
-        }}>{showForm ? "✕ Cancel" : "+ Add Charger"}</button>
+        {isAdmin && (
+          <button onClick={() => setShowForm(!showForm)} style={{
+            padding: "9px 18px", borderRadius: "8px", border: "none",
+            background: "linear-gradient(135deg, #0284c7, #0ea5e9)",
+            color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(2,132,199,0.3)",
+          }}>{showForm ? "✕ Cancel" : "+ Add Charger"}</button>
+        )}
       </div>
 
       {/* Add Station Form */}
-      {showForm && (
+      {isAdmin && showForm && (
         <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e8ecf0", padding: "24px", marginBottom: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
           <h3 style={{ margin: "0 0 20px", fontSize: "15px", fontWeight: "700", color: "#0f172a" }}>Add New Station</h3>
           {/* ✅ Form grid responsive */}
@@ -107,18 +135,26 @@ export default function Chargers() {
         </div>
       )}
 
-      {/* ✅ Cards grid responsive */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "repeat(3, 1fr)", gap: "18px" }}>
-        {filtered.map((c) => (
-          <ChargerCard key={c.id} station={c} />
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
-        <div style={{ textAlign: "center", padding: "60px", color: "#94a3b8" }}>
-          <p style={{ fontSize: "40px" }}>🔌</p>
-          <p style={{ fontSize: "15px", fontWeight: "600", marginTop: "12px" }}>No chargers found</p>
+      {loading ? (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}>
+          <p style={{ fontSize: "14px", color: "#64748b", fontWeight: "600" }}>Loading chargers...</p>
         </div>
+      ) : (
+        <>
+          {/* ✅ Cards grid responsive */}
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "repeat(3, 1fr)", gap: "18px" }}>
+            {filtered.map((c) => (
+              <ChargerCard key={c.id} station={c} />
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <div style={{ textAlign: "center", padding: "60px", color: "#94a3b8" }}>
+              <p style={{ fontSize: "40px" }}>🔌</p>
+              <p style={{ fontSize: "15px", fontWeight: "600", marginTop: "12px" }}>No chargers found</p>
+            </div>
+          )}
+        </>
       )}
 
     </Layout>
